@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getDueCards, updateCard } from '../services/storageService';
+import { getDueCards, updateCard, trackStudyProgress, getSettings } from '../services/storageService';
 import { processReview } from '../services/srsAlgorithm';
-import { Flashcard, Rating } from '../types';
+import { Flashcard, Rating, Achievement } from '../types';
 import FlashcardView from '../components/FlashcardView';
+// @ts-ignore
+import confetti from 'canvas-confetti';
 
 interface HistoryState {
   originalCard: Flashcard;
@@ -31,11 +33,15 @@ const StudySession: React.FC = () => {
   // Feedback states
   const [feedback, setFeedback] = useState<{text: string, type: 'success' | 'warning' | 'info'} | null>(null);
   const [screenFlash, setScreenFlash] = useState<'green' | 'red' | null>(null);
+  const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
 
   // Editing State
   const [isEditing, setIsEditing] = useState(false);
   const [editFront, setEditFront] = useState('');
   const [editBack, setEditBack] = useState('');
+
+  // Timer
+  const cardStartTime = useRef<number>(Date.now());
 
   useEffect(() => {
     const initSession = () => {
@@ -59,6 +65,11 @@ const StudySession: React.FC = () => {
     initSession();
   }, [location.state]);
 
+  // Reset timer when card changes
+  useEffect(() => {
+    cardStartTime.current = Date.now();
+  }, [currentCardIndex]);
+
   const showFeedbackMessage = (type: 'success' | 'warning' | 'info', text: string) => {
     setFeedback({ type, text });
     if (type === 'success' || type === 'warning') {
@@ -73,6 +84,9 @@ const StudySession: React.FC = () => {
   const handleRate = useCallback((rating: Rating) => {
     const currentCard = queue[currentCardIndex];
     if (!currentCard) return;
+
+    // Calculate duration
+    const duration = Math.round((Date.now() - cardStartTime.current) / 1000);
     
     // 1. HISTORY FOR UNDO
     const wasRequeued = rating === Rating.Again;
@@ -101,6 +115,26 @@ const StudySession: React.FC = () => {
       // STANDARD SRS LOGIC
       const updatedCard = processReview(currentCard, rating);
       updateCard(updatedCard); // Save to DB
+
+      // GAMIFICATION: Track Streak, Achievements, and Time
+      const { achievement, reviewsToday } = trackStudyProgress(rating, duration);
+      const settings = getSettings();
+
+      // Confetti Trigger
+      if (reviewsToday === settings.dailyGoal) {
+         confetti({
+           particleCount: 100,
+           spread: 70,
+           origin: { y: 0.6 },
+           colors: ['#6366f1', '#f43f5e', '#10b981', '#fbbf24']
+         });
+         setTimeout(() => showFeedbackMessage('success', 'Günlük Hedef Tamamlandı! 🎉'), 400);
+      }
+
+      if (achievement) {
+        setNewAchievement(achievement);
+        setTimeout(() => setNewAchievement(null), 4000); // Hide after 4s
+      }
 
       if (rating === Rating.Again) {
         setQueue(prev => [...prev, { ...updatedCard, dueDate: Date.now() }]);
@@ -270,8 +304,24 @@ const StudySession: React.FC = () => {
           screenFlash === 'red' ? 'bg-red-500/10' : 'bg-transparent'
       }`}></div>
 
+      {/* Achievement Celebration Notification (Top Slide Down - Softened) */}
+      {newAchievement && (
+        <div className="fixed top-8 left-0 right-0 z-[70] flex justify-center pointer-events-none animate-in slide-in-from-top-full fade-in duration-700 ease-out">
+           <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-2 border-amber-300 dark:border-amber-500/50 p-4 rounded-2xl shadow-2xl shadow-amber-500/20 flex items-center gap-4 mx-4 max-w-md w-full">
+              <div className="text-4xl shrink-0 animate-bounce">
+                  {newAchievement.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-amber-500 font-black uppercase tracking-widest text-[10px] mb-0.5">Yeni Başarım!</h2>
+                <h3 className="text-lg font-display font-bold text-dark dark:text-white leading-tight truncate">{newAchievement.title}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-xs truncate">{newAchievement.description}</p>
+              </div>
+           </div>
+        </div>
+      )}
+
       {/* Feedback Toast */}
-      <div className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none ${
+      <div className={`fixed top-28 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none ${
         feedback ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
       }`}>
         {feedback && (

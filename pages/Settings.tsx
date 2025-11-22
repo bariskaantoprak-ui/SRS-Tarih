@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getSettings, saveSettings } from '../services/storageService';
+import { getSettings, saveSettings, exportData } from '../services/storageService';
 import { UserSettings } from '../types';
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [isSaved, setIsSaved] = useState(false);
-
+  
   useEffect(() => {
     setSettings(getSettings());
   }, []);
@@ -36,10 +36,22 @@ const Settings: React.FC = () => {
     saveSettings({...settings, theme: newTheme});
   };
 
+  const handleExport = () => {
+    const dataStr = exportData();
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tarihkart_yedek_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (!settings) return <div className="p-6 dark:text-white">Yükleniyor...</div>;
 
   return (
-    <div className="min-h-screen bg-paper dark:bg-slate-950 pb-24 p-6 transition-colors duration-300">
+    <div className="min-h-screen bg-paper dark:bg-slate-950 pb-24 p-6 transition-colors duration-300 relative">
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-8 pt-2">
             <div className="flex items-center gap-3">
@@ -65,7 +77,7 @@ const Settings: React.FC = () => {
 
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
             
-            {/* Theme Toggle - New */}
+            {/* Theme Toggle */}
             <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${settings.theme === 'dark' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-orange-50 text-orange-500'}`}>
@@ -167,6 +179,29 @@ const Settings: React.FC = () => {
                 </button>
             </div>
 
+            {/* Data Management Section */}
+            <div className="space-y-3">
+                <h3 className="font-bold text-gray-400 dark:text-gray-500 text-sm uppercase tracking-wider px-2">Veri Yönetimi</h3>
+                
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800">
+                     <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                </svg>
+                             </div>
+                             <div>
+                                <h2 className="font-bold text-dark dark:text-white text-lg">Yedekle</h2>
+                                <p className="text-xs text-gray-400 dark:text-gray-500">Tüm verilerini indir</p>
+                             </div>
+                        </div>
+                        <button onClick={handleExport} className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl font-bold text-sm">
+                            İndir (JSON)
+                        </button>
+                     </div>
+                </div>
+            </div>
         </div>
       </div>
     </div>

@@ -6,7 +6,6 @@ import CreateCards from './pages/CreateCards';
 import Community from './pages/Community';
 import Settings from './pages/Settings';
 import Library from './pages/Library';
-import VisualEditor from './pages/VisualEditor';
 import BottomNav from './components/BottomNav';
 import Sidebar from './components/Sidebar';
 import { getSettings } from './services/storageService';
@@ -54,7 +53,6 @@ const App: React.FC = () => {
           <Route path="/community" element={<Community />} />
           <Route path="/library" element={<Library />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/visual" element={<VisualEditor />} />
         </Routes>
       </Layout>
     </Router>

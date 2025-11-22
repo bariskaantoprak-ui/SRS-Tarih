@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addCards, getUserPacks, createUserPack } from '../services/storageService';
+import { addCards, getUserPacks, createUserPack, getCards, getAddedPremadeDecks, markPremadeDeckAdded } from '../services/storageService';
 import { createNewCard } from '../services/srsAlgorithm';
 import { PREMADE_DECKS, PremadeDeck } from '../data/premadeDecks';
 import { Flashcard, UserPack } from '../types';
@@ -12,6 +12,7 @@ const CreateCards: React.FC = () => {
   // Manual States
   const [manualFront, setManualFront] = useState('');
   const [manualBack, setManualBack] = useState('');
+  const [similarCard, setSimilarCard] = useState<Flashcard | null>(null);
   
   // Pack Management
   const [packs, setPacks] = useState<UserPack[]>([]);
@@ -26,13 +27,28 @@ const CreateCards: React.FC = () => {
   const [csvPreview, setCsvPreview] = useState<Flashcard[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // All Cards for similarity check
+  const [allCards, setAllCards] = useState<Flashcard[]>([]);
+
   useEffect(() => {
     const userPacks = getUserPacks();
     setPacks(userPacks);
     if (userPacks.length > 0) {
       setSelectedPackId(userPacks[userPacks.length - 1].id); // Select latest or first
     }
+    setAllCards(getCards());
+    setAddedDecks(getAddedPremadeDecks());
   }, []);
+
+  // Similarity Check Effect
+  useEffect(() => {
+    if (manualFront.length > 5) {
+        const found = allCards.find(c => c.front.toLowerCase().includes(manualFront.toLowerCase()));
+        setSimilarCard(found || null);
+    } else {
+        setSimilarCard(null);
+    }
+  }, [manualFront, allCards]);
 
   const handleCreatePack = () => {
     if (!newPackName.trim()) return;
@@ -60,6 +76,9 @@ const CreateCards: React.FC = () => {
     const newCard = createNewCard(manualFront, manualBack, tagName);
     addCards([newCard]);
     
+    // Refresh all cards for next similarity check
+    setAllCards(prev => [...prev, newCard]);
+
     setManualFront('');
     setManualBack('');
   };
@@ -67,8 +86,9 @@ const CreateCards: React.FC = () => {
   const handleAddPremade = (deck: PremadeDeck) => {
     const newCards = deck.cards.map(c => createNewCard(c.front, c.back, c.tag));
     addCards(newCards);
+    markPremadeDeckAdded(deck.id);
     setAddedDecks(prev => [...prev, deck.id]);
-    setTimeout(() => navigate('/'), 800);
+    // Removed navigation to allow adding multiple packs
   };
 
   const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,6 +249,16 @@ const CreateCards: React.FC = () => {
                 disabled={packs.length === 0}
                 className="w-full p-4 rounded-xl bg-gray-50 dark:bg-slate-800 border-transparent focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-dark dark:text-white font-medium placeholder-gray-400 disabled:opacity-50 resize-none"
               />
+              {/* Similar Card Warning */}
+              {similarCard && (
+                  <div className="mt-2 p-3 bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-900 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                      <span className="text-xl">⚠️</span>
+                      <div>
+                          <p className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase mb-1">Benzer Kart Bulundu</p>
+                          <p className="text-sm text-dark dark:text-white font-medium">"{similarCard.front}"</p>
+                      </div>
+                  </div>
+              )}
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Cevap (Arka Yüz)</label>

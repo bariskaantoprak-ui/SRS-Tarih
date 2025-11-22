@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { getStats, getDueCards } from '../services/storageService';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { getStats } from '../services/storageService';
 import { DeckStats } from '../types';
 
 const Dashboard: React.FC = () => {
@@ -16,11 +16,19 @@ const Dashboard: React.FC = () => {
 
   if (!stats) return <div className="p-6 text-center flex items-center justify-center h-screen dark:text-white">Yükleniyor...</div>;
 
-  const chartData = [
+  const cardDistributionData = [
     { name: 'Yeni', count: stats.new, color: '#6366f1' }, // Primary
     { name: 'Tekrar', count: stats.due, color: '#f43f5e' }, // Accent
     { name: 'Bitmiş', count: stats.mastered, color: '#10b981' }, // Success
   ];
+
+  const progressPercent = Math.min(100, Math.round((stats.reviewsToday / stats.dailyGoal) * 100));
+  
+  // Format time
+  const formatTime = (seconds: number) => {
+      if (seconds < 60) return `${seconds}sn`;
+      return `${Math.floor(seconds / 60)}dk`;
+  };
 
   return (
     <div className="p-6 md:p-10 min-h-screen pb-24 bg-paper dark:bg-slate-950 transition-colors">
@@ -37,15 +45,60 @@ const Dashboard: React.FC = () => {
         </Link>
       </header>
 
+      {/* Streak Counter */}
+      <div className="flex items-center gap-2 mb-6">
+         <div className="flex items-center bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-900 px-4 py-2 rounded-full">
+            <span className="text-xl animate-pulse mr-2">🔥</span>
+            <span className="text-sm font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wide">
+               {stats.streak} Günlük Seri
+            </span>
+         </div>
+      </div>
+
+      {/* Daily Goal Progress Bar */}
+      <div className="mb-6 bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-soft border border-gray-50 dark:border-slate-800">
+         <div className="flex justify-between items-end mb-2">
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Günlük Hedef</span>
+            <span className="text-sm font-bold text-dark dark:text-white">
+                <span className="text-primary">{stats.reviewsToday}</span> / {stats.dailyGoal}
+            </span>
+         </div>
+         <div className="w-full h-3 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div 
+                className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-700 ease-out rounded-full"
+                style={{ width: `${progressPercent}%` }}
+            ></div>
+         </div>
+      </div>
+
       {/* Main Layout Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         
-        {/* Left Column: Main Action & Stats */}
+        {/* Left Column: Action, Forecast, Heatmap */}
         <div className="md:col-span-7 lg:col-span-8 space-y-6">
+            
+            {/* Forecast & Average Time Row */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-soft border border-gray-50 dark:border-slate-800">
+                   <div className="text-xs font-bold text-gray-400 uppercase mb-1">Tahmini Bitiş</div>
+                   <div className="text-2xl font-display font-bold text-dark dark:text-white">
+                       {stats.forecastDays === 0 ? 'Bitti 🎉' : `${stats.forecastDays} Gün`}
+                   </div>
+                   <p className="text-[10px] text-gray-400 mt-1 leading-tight">Yeni kartların bitmesi için gereken süre.</p>
+                </div>
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-soft border border-gray-50 dark:border-slate-800">
+                   <div className="text-xs font-bold text-gray-400 uppercase mb-1">Ortalama Süre</div>
+                   <div className="text-2xl font-display font-bold text-dark dark:text-white">
+                       {formatTime(stats.averageTimePerDay)}
+                   </div>
+                   <p className="text-[10px] text-gray-400 mt-1 leading-tight">Günlük ortalama çalışma süren.</p>
+                </div>
+            </div>
+
             {/* Main Call to Action */}
             <div className="bg-gradient-to-br from-primary to-secondary rounded-3xl p-8 text-white shadow-lg shadow-indigo-500/30 relative overflow-hidden">
                 <div className="relative z-10">
-                <h2 className="text-indigo-100 font-medium mb-2 uppercase tracking-wider text-xs">Günlük Hedef</h2>
+                <h2 className="text-indigo-100 font-medium mb-2 uppercase tracking-wider text-xs">Bekleyen Kartlar</h2>
                 <div className="text-6xl font-display font-bold mb-3 tracking-tight">{dueCount}</div>
                 <p className="text-indigo-100 opacity-90 mb-8 font-medium">kart tekrar edilmeyi bekliyor.</p>
                 
@@ -72,65 +125,119 @@ const Dashboard: React.FC = () => {
                 <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-purple-500/30 rounded-full blur-2xl"></div>
             </div>
 
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-soft border border-gray-50 dark:border-slate-800">
-                <div className="w-10 h-10 bg-orange-50 dark:bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-500 mb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                </div>
-                <div className="text-3xl font-bold text-dark dark:text-white font-display">{stats.total}</div>
-                <div className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide mt-1">Toplam Kart</div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-soft border border-gray-50 dark:border-slate-800">
-                <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 mb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                </div>
-                <div className="text-3xl font-bold text-dark dark:text-white font-display">{stats.mastered}</div>
-                <div className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide mt-1">Ezberlenen</div>
-                </div>
+            {/* Heatmap Calendar */}
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800">
+               <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-4">Son 30 Günlük Aktivite</h3>
+               <div className="flex flex-wrap gap-2">
+                  {stats.heatmapData.map((day, i) => (
+                      <div 
+                        key={i} 
+                        title={`${day.date}: ${day.count} kart`}
+                        className={`w-6 h-6 md:w-8 md:h-8 rounded-lg transition-all ${
+                            day.level === 0 ? 'bg-gray-100 dark:bg-slate-800' :
+                            day.level === 1 ? 'bg-indigo-200 dark:bg-indigo-900/40' :
+                            day.level === 2 ? 'bg-indigo-300 dark:bg-indigo-800/60' :
+                            day.level === 3 ? 'bg-indigo-400 dark:bg-indigo-600/80' :
+                            'bg-indigo-600 dark:bg-indigo-500'
+                        }`}
+                      ></div>
+                  ))}
+               </div>
             </div>
         </div>
 
-        {/* Right Column: Charts */}
-        <div className="md:col-span-5 lg:col-span-4">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800 h-full min-h-[300px]">
-                <h3 className="text-xl font-bold text-dark dark:text-white mb-5 font-display">İlerleme Grafiği</h3>
-                <div className="h-64">
+        {/* Right Column: Charts & Achievements */}
+        <div className="md:col-span-5 lg:col-span-4 space-y-6">
+            
+            {/* Retention Chart */}
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800 min-h-[220px]">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-4">Haftalık Başarı Oranı</h3>
+                <div className="h-40">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
+                    <LineChart data={stats.retentionGraphData}>
+                         <XAxis 
+                            dataKey="name" 
+                            axisLine={false} 
+                            tickLine={false} 
+                            tick={{fontSize: 10, fill: '#94a3b8'}} 
+                            dy={10}
+                        />
+                        <Tooltip 
+                            contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#fff' }}
+                            formatter={(value: number) => [`%${value}`, 'Başarı']}
+                        />
+                        <Line 
+                            type="monotone" 
+                            dataKey="rate" 
+                            stroke="#10b981" 
+                            strokeWidth={3} 
+                            dot={{r: 3, fill: '#10b981', strokeWidth: 0}}
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+                </div>
+                <div className="text-center mt-2">
+                    <span className="text-2xl font-bold text-emerald-500">%{stats.retentionRate}</span>
+                    <span className="text-xs text-gray-400 ml-2">Genel Doğruluk</span>
+                </div>
+            </div>
+
+             {/* Distribution Chart */}
+             <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800 min-h-[200px]">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-4">Kart Durumları</h3>
+                <div className="h-32">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cardDistributionData}>
                     <XAxis 
                         dataKey="name" 
                         axisLine={false} 
                         tickLine={false} 
-                        tick={{fontSize: 13, fill: '#94a3b8', fontWeight: 500}} 
+                        tick={{fontSize: 12, fill: '#94a3b8'}} 
                         dy={10}
                     />
-                    <YAxis hide />
                     <Tooltip 
                         cursor={{fill: 'transparent'}}
-                        contentStyle={{ 
-                            borderRadius: '12px', 
-                            border: 'none', 
-                            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', 
-                            fontFamily: 'Inter',
-                            padding: '10px 15px',
-                            backgroundColor: '#1e293b', // Slate 800 for dark tooltip
-                            color: '#fff'
-                        }}
-                        itemStyle={{ color: '#fff' }}
+                        contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#fff' }}
                     />
-                    <Bar dataKey="count" radius={[8, 8, 8, 8]} barSize={45}>
-                        {chartData.map((entry, index) => (
+                    <Bar dataKey="count" radius={[6, 6, 6, 6]} barSize={30}>
+                        {cardDistributionData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                     </Bar>
                     </BarChart>
                 </ResponsiveContainer>
                 </div>
+            </div>
+
+            {/* Achievements */}
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800">
+               <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase">Başarımlar</h3>
+                  <span className="text-xs font-bold bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 px-2 py-1 rounded">
+                    {stats.achievements.filter(a => a.unlockedAt).length} / {stats.achievements.length}
+                  </span>
+               </div>
+               <div className="grid grid-cols-3 gap-3">
+                  {stats.achievements.map(ach => {
+                    const isUnlocked = !!ach.unlockedAt;
+                    return (
+                      <div 
+                        key={ach.id} 
+                        className={`aspect-square rounded-2xl flex flex-col items-center justify-center p-2 text-center border transition-all duration-300 ${
+                          isUnlocked 
+                            ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-900/50' 
+                            : 'bg-gray-50 dark:bg-slate-800 border-transparent opacity-40 grayscale'
+                        }`}
+                        title={ach.description}
+                      >
+                         <div className="text-2xl mb-1">{ach.icon}</div>
+                         <div className={`text-[9px] font-bold leading-tight ${isUnlocked ? 'text-amber-700 dark:text-amber-400' : 'text-gray-400'}`}>
+                           {ach.title}
+                         </div>
+                      </div>
+                    )
+                  })}
+               </div>
             </div>
         </div>
 

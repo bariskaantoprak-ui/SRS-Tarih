@@ -33,6 +33,30 @@ export interface UserPack {
   createdAt: number;
 }
 
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlockedAt?: number; // Timestamp if unlocked, undefined if locked
+}
+
+export interface DailyStat {
+  date: number; // Timestamp of the day (midnight)
+  count: number; // Total cards reviewed
+  correctCount: number; // Rated Good or Easy
+  timeSpent: number; // Seconds studied
+}
+
+export interface UserProgress {
+  lastStudyDate: number | null;
+  currentStreak: number;
+  unlockedAchievements: string[]; // IDs of unlocked achievements
+  totalReviews: number;
+  reviewsToday: number; // Track daily progress
+  history: DailyStat[]; // Detailed daily history
+}
+
 export interface DeckStats {
   total: number;
   due: number;
@@ -40,6 +64,15 @@ export interface DeckStats {
   mastered: number;
   streak: number; // Days in a row
   xp: number; // Gamification score
+  achievements: Achievement[];
+  reviewsToday: number;
+  dailyGoal: number;
+  // New Advanced Stats
+  averageTimePerDay: number; // Seconds
+  retentionRate: number; // Percentage (0-100)
+  forecastDays: number; // Days to finish new cards
+  heatmapData: { date: string; count: number; level: number }[]; // For visualization
+  retentionGraphData: { name: string; rate: number }[]; // For graph
 }
 
 export interface UserSettings {
