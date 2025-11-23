@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { getStats, getCards } from '../services/storageService';
 import { DeckStats, Achievement, Flashcard } from '../types';
 
@@ -206,36 +206,58 @@ const Dashboard: React.FC = () => {
         {/* Right Column: Charts & Achievements */}
         <div className="md:col-span-5 lg:col-span-4 space-y-6">
             
-            {/* Retention Chart */}
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800 min-h-[220px]">
-                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-4">Haftalık Başarı Oranı</h3>
-                <div className="h-40">
+            {/* Retention Chart (Area Chart) */}
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800 min-h-[320px]">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-6">Haftalık Başarı Oranı</h3>
+                <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={stats.retentionGraphData}>
+                    <AreaChart data={stats.retentionGraphData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                         <defs>
+                            <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                            </linearGradient>
+                         </defs>
+                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5} />
                          <XAxis 
                             dataKey="name" 
                             axisLine={false} 
                             tickLine={false} 
-                            tick={{fontSize: 10, fill: '#94a3b8'}} 
+                            tick={{fontSize: 12, fill: '#94a3b8'}} 
                             dy={10}
                         />
+                        <YAxis 
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{fontSize: 12, fill: '#94a3b8'}}
+                            domain={[0, 100]}
+                        />
                         <Tooltip 
-                            contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#fff' }}
+                            contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1e293b', color: '#fff', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                            cursor={{ stroke: '#06b6d4', strokeWidth: 1, strokeDasharray: '4 4' }}
                             formatter={(value: number) => [`%${value}`, 'Başarı']}
                         />
-                        <Line 
+                        <Area 
                             type="monotone" 
                             dataKey="rate" 
-                            stroke="#10b981" 
-                            strokeWidth={3} 
-                            dot={{r: 3, fill: '#10b981', strokeWidth: 0}}
+                            stroke="#06b6d4" 
+                            strokeWidth={4} 
+                            fillOpacity={1} 
+                            fill="url(#colorRate)" 
                         />
-                    </LineChart>
+                    </AreaChart>
                 </ResponsiveContainer>
                 </div>
-                <div className="text-center mt-2">
-                    <span className="text-2xl font-bold text-emerald-500">%{stats.retentionRate}</span>
-                    <span className="text-xs text-gray-400 ml-2">Genel Doğruluk</span>
+                <div className="flex justify-between items-end mt-4 px-2">
+                    <div>
+                        <div className="text-xs text-gray-400 font-medium uppercase">Ortalama</div>
+                        <div className="text-3xl font-display font-bold text-dark dark:text-white">%{stats.retentionRate}</div>
+                    </div>
+                    <div className="text-right">
+                         <div className="text-xs text-emerald-500 font-bold bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-lg">
+                             {stats.retentionRate >= 80 ? 'Mükemmel 🌟' : stats.retentionRate >= 50 ? 'İyi Gidiyor 👍' : 'Gayret Et 💪'}
+                         </div>
+                    </div>
                 </div>
             </div>
 
