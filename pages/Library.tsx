@@ -9,7 +9,10 @@ const Library: React.FC = () => {
   const [filteredCards, setFilteredCards] = useState<Flashcard[]>([]);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'question' | 'answer' | 'tag'>('newest');
+  
+  // Modals State
   const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
+  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
   useEffect(() => {
     loadCards();
@@ -50,10 +53,11 @@ const Library: React.FC = () => {
     setAllCards(cards); 
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Bu kartı silmek istediğine emin misin?')) {
-      deleteCard(id);
-      loadCards();
+  const confirmDelete = () => {
+    if (deletingCardId) {
+        deleteCard(deletingCardId);
+        setDeletingCardId(null); // Close modal
+        loadCards(); // Refresh list
     }
   };
 
@@ -68,7 +72,7 @@ const Library: React.FC = () => {
   const startExam = () => {
     if (filteredCards.length === 0) return;
     // Navigate to study session with CRAM MODE enabled and specific cards
-    navigate('/study', { state: { cramMode: true, cards: filteredCards } });
+    navigate('/session', { state: { cramMode: true, cards: filteredCards } });
   };
 
   return (
@@ -150,7 +154,7 @@ const Library: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                     </svg>
                   </button>
-                  <button onClick={() => handleDelete(card.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                  <button onClick={() => setDeletingCardId(card.id)} className="text-gray-400 hover:text-red-500 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>
@@ -165,9 +169,38 @@ const Library: React.FC = () => {
         )}
       </div>
 
+      {/* Delete Confirmation Modal */}
+      {deletingCardId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200 border dark:border-slate-800 text-center">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                </div>
+                <h2 className="text-xl font-bold mb-2 dark:text-white">Kartı Sil</h2>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">Bu kartı silmek istediğine emin misin? Bu işlem geri alınamaz.</p>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={() => setDeletingCardId(null)}
+                        className="flex-1 py-3 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                    >
+                        Vazgeç
+                    </button>
+                    <button 
+                        onClick={confirmDelete}
+                        className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold shadow-lg shadow-red-500/30 hover:bg-red-600 transition-colors"
+                    >
+                        Evet, Sil
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
       {/* Edit Modal */}
       {editingCard && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 border dark:border-slate-800">
             <h2 className="text-xl font-bold mb-4 dark:text-white">Kartı Düzenle</h2>
             <div className="space-y-4">
