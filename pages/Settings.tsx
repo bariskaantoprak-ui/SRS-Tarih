@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSettings, saveSettings, exportData } from '../services/storageService';
 import { UserSettings } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const { logout } = useAuth();
   
   useEffect(() => {
     setSettings(getSettings());
@@ -177,6 +179,32 @@ const Settings: React.FC = () => {
                 >
                     <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-sm transition-transform duration-300 ${settings.notificationsEnabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
                 </button>
+            </div>
+
+            {/* Account Section */}
+            <div className="space-y-3">
+                <h3 className="font-bold text-gray-400 dark:text-gray-500 text-sm uppercase tracking-wider px-2">Hesap</h3>
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                                </svg>
+                             </div>
+                             <div>
+                                <h2 className="font-bold text-dark dark:text-white text-lg">Oturumu Kapat</h2>
+                                <p className="text-xs text-gray-400 dark:text-gray-500">Hesabından çıkış yap</p>
+                             </div>
+                        </div>
+                        <button 
+                            onClick={logout}
+                            className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-sm border border-red-100 dark:border-red-900/50"
+                        >
+                            Çıkış Yap
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Data Management Section */}

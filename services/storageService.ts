@@ -1,10 +1,73 @@
-import { Flashcard, DeckStats, CardStatus, LeaderboardUser, UserSettings, UserPack, UserProgress, Achievement, Rating, DailyStat } from '../types';
+import { Flashcard, DeckStats, CardStatus, LeaderboardUser, UserSettings, UserPack, UserProgress, Achievement, Rating, User } from '../types';
 
-const STORAGE_KEY = 'tarihkart_db_v1';
-const SETTINGS_KEY = 'tarihkart_settings_v1';
-const PACKS_KEY = 'tarihkart_packs_v1';
-const PROGRESS_KEY = 'tarihkart_progress_v1';
-const PREMADE_TRACK_KEY = 'tarihkart_premade_tracking_v1';
+// GLOBAL KEYS (System wide)
+const USERS_LIST_KEY = 'netkart_users_v1';
+const ACTIVE_USER_ID_KEY = 'netkart_active_user_id';
+
+// USER SPECIFIC KEY GENERATOR
+const getKey = (baseKey: string): string => {
+  const userId = localStorage.getItem(ACTIVE_USER_ID_KEY);
+  if (!userId) return `${baseKey}_guest`; // Fallback, though app should redirect to login
+  return `${baseKey}_${userId}`;
+};
+
+// --- AUTHENTICATION SERVICES ---
+
+export const registerUser = (username: string, password: string): User => {
+  const usersStr = localStorage.getItem(USERS_LIST_KEY);
+  const users: User[] = usersStr ? JSON.parse(usersStr) : [];
+  
+  if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+    throw new Error('Bu kullanıcı adı zaten alınmış.');
+  }
+
+  const newUser: User = {
+    id: crypto.randomUUID(),
+    username,
+    password, // Note: In a real app, hash this!
+    avatar: ['👨‍🎓', '👩‍🎓', '👨‍💻', '👩‍💻', '🧠', '🦉'][Math.floor(Math.random() * 6)],
+    createdAt: Date.now()
+  };
+
+  users.push(newUser);
+  localStorage.setItem(USERS_LIST_KEY, JSON.stringify(users));
+  
+  // Auto login
+  localStorage.setItem(ACTIVE_USER_ID_KEY, newUser.id);
+  
+  // Initialize default data for this user
+  const settingsKey = `tarihkart_settings_v1_${newUser.id}`;
+  localStorage.setItem(settingsKey, JSON.stringify(DEFAULT_SETTINGS));
+
+  return newUser;
+};
+
+export const loginUser = (username: string, password: string): User => {
+  const usersStr = localStorage.getItem(USERS_LIST_KEY);
+  const users: User[] = usersStr ? JSON.parse(usersStr) : [];
+  
+  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+  
+  if (!user) {
+    throw new Error('Kullanıcı adı veya şifre hatalı.');
+  }
+  
+  localStorage.setItem(ACTIVE_USER_ID_KEY, user.id);
+  return user;
+};
+
+export const logoutUser = () => {
+  localStorage.removeItem(ACTIVE_USER_ID_KEY);
+};
+
+export const getCurrentUser = (): User | null => {
+  const userId = localStorage.getItem(ACTIVE_USER_ID_KEY);
+  if (!userId) return null;
+  
+  const usersStr = localStorage.getItem(USERS_LIST_KEY);
+  const users: User[] = usersStr ? JSON.parse(usersStr) : [];
+  return users.find(u => u.id === userId) || null;
+};
 
 // --- ACHIEVEMENTS DEFINITION ---
 export const ACHIEVEMENTS_LIST: Omit<Achievement, 'unlockedAt'>[] = [
@@ -37,7 +100,8 @@ export const ACHIEVEMENTS_LIST: Omit<Achievement, 'unlockedAt'>[] = [
 
 export const getCards = (): Flashcard[] => {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const key = getKey('tarihkart_db_v1');
+    const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
   } catch (e) {
     console.error("Failed to load cards", e);
@@ -46,7 +110,8 @@ export const getCards = (): Flashcard[] => {
 };
 
 export const saveCards = (cards: Flashcard[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+  const key = getKey('tarihkart_db_v1');
+  localStorage.setItem(key, JSON.stringify(cards));
 };
 
 export const addCards = (newCards: Flashcard[]) => {
@@ -79,7 +144,8 @@ export const getDueCards = (): Flashcard[] => {
 
 export const getUserPacks = (): UserPack[] => {
   try {
-    const data = localStorage.getItem(PACKS_KEY);
+    const key = getKey('tarihkart_packs_v1');
+    const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
   } catch (e) {
     return [];
@@ -93,7 +159,8 @@ export const createUserPack = (name: string): UserPack => {
     name,
     createdAt: Date.now()
   };
-  localStorage.setItem(PACKS_KEY, JSON.stringify([...packs, newPack]));
+  const key = getKey('tarihkart_packs_v1');
+  localStorage.setItem(key, JSON.stringify([...packs, newPack]));
   return newPack;
 };
 
@@ -101,7 +168,8 @@ export const createUserPack = (name: string): UserPack => {
 
 export const getAddedPremadeDecks = (): string[] => {
   try {
-    const data = localStorage.getItem(PREMADE_TRACK_KEY);
+    const key = getKey('tarihkart_premade_tracking_v1');
+    const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
   } catch (e) {
     return [];
@@ -111,7 +179,8 @@ export const getAddedPremadeDecks = (): string[] => {
 export const markPremadeDeckAdded = (id: string) => {
   const current = getAddedPremadeDecks();
   if (!current.includes(id)) {
-    localStorage.setItem(PREMADE_TRACK_KEY, JSON.stringify([...current, id]));
+    const key = getKey('tarihkart_premade_tracking_v1');
+    localStorage.setItem(key, JSON.stringify([...current, id]));
   }
 };
 
@@ -119,7 +188,8 @@ export const markPremadeDeckAdded = (id: string) => {
 
 const getUserProgress = (): UserProgress => {
   try {
-    const data = localStorage.getItem(PROGRESS_KEY);
+    const key = getKey('tarihkart_progress_v1');
+    const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : {
       lastStudyDate: null,
       currentStreak: 0,
@@ -141,7 +211,8 @@ const getUserProgress = (): UserProgress => {
 };
 
 const saveUserProgress = (progress: UserProgress) => {
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  const key = getKey('tarihkart_progress_v1');
+  localStorage.setItem(key, JSON.stringify(progress));
 };
 
 // Called every time a card is reviewed
@@ -279,7 +350,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
 export const getSettings = (): UserSettings => {
   try {
-    const data = localStorage.getItem(SETTINGS_KEY);
+    const key = getKey('tarihkart_settings_v1');
+    const data = localStorage.getItem(key);
     if (data) {
        const parsed = JSON.parse(data);
        const defaults = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
@@ -299,7 +371,8 @@ export const getSettings = (): UserSettings => {
 };
 
 export const saveSettings = (settings: UserSettings) => {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  const key = getKey('tarihkart_settings_v1');
+  localStorage.setItem(key, JSON.stringify(settings));
 };
 
 // --- DATA MANAGEMENT ---
@@ -328,12 +401,21 @@ export const resetProgress = () => {
         reps: 0
     }));
     saveCards(resetCards);
-    // Reset Progress
-    localStorage.removeItem(PROGRESS_KEY);
+    
+    const key = getKey('tarihkart_progress_v1');
+    localStorage.removeItem(key);
 };
 
 export const clearAllData = () => {
-    localStorage.clear();
+    const userId = localStorage.getItem(ACTIVE_USER_ID_KEY);
+    if (!userId) return;
+
+    // Only clear data for THIS user
+    localStorage.removeItem(getKey('tarihkart_db_v1'));
+    localStorage.removeItem(getKey('tarihkart_settings_v1'));
+    localStorage.removeItem(getKey('tarihkart_packs_v1'));
+    localStorage.removeItem(getKey('tarihkart_progress_v1'));
+    localStorage.removeItem(getKey('tarihkart_premade_tracking_v1'));
 }
 
 // --- STATS ---
@@ -448,13 +530,16 @@ export const getTags = (): string[] => {
 
 export const getLeaderboard = (): LeaderboardUser[] => {
   const myStats = getStats();
+  const currentUser = getCurrentUser();
+  const userName = currentUser ? currentUser.username : 'Sen';
+  const userAvatar = currentUser ? currentUser.avatar : '👤';
   
   const users: LeaderboardUser[] = [
     { id: '1', name: 'Selin Y.', xp: Math.max(1250, myStats.xp + 200), avatar: '👩‍🎓' },
     { id: '2', name: 'Ahmet K.', xp: Math.max(900, myStats.xp - 100), avatar: '👨‍💻' },
     { id: '3', name: 'Mehmet T.', xp: 3200, avatar: '👨‍🏫' },
     { id: '4', name: 'Ayşe B.', xp: 2100, avatar: '👩‍🔬' },
-    { id: 'me', name: 'Sen', xp: myStats.xp, avatar: '👤', isCurrentUser: true },
+    { id: 'me', name: userName, xp: myStats.xp, avatar: userAvatar, isCurrentUser: true },
   ];
 
   return users.sort((a, b) => b.xp - a.xp).map((u, i) => ({...u, rank: i + 1}));

@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
+  const { user, logout } = useAuth();
 
   const navItems = [
     { path: '/', label: 'Panel', icon: (
@@ -46,6 +48,28 @@ const Sidebar: React.FC = () => {
         <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Akıllı Sınav Hazırlık</p>
       </div>
 
+      <div className="px-6 mb-4">
+        {user && (
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl p-4 text-white shadow-lg shadow-cyan-500/20">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-xl">
+                        {user.avatar}
+                    </div>
+                    <div>
+                        <div className="font-bold text-sm">{user.username}</div>
+                        <div className="text-[10px] opacity-80 uppercase font-bold tracking-wide">Öğrenci</div>
+                    </div>
+                </div>
+                <button 
+                  onClick={logout}
+                  className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-colors"
+                >
+                    Çıkış Yap
+                </button>
+            </div>
+        )}
+      </div>
+
       <nav className="flex-1 px-4 space-y-2">
         {navItems.map((item) => {
           const active = isActive(item.path);
@@ -65,13 +89,6 @@ const Sidebar: React.FC = () => {
           );
         })}
       </nav>
-
-      <div className="p-4 border-t border-gray-100 dark:border-slate-800">
-        <div className="bg-indigo-50 dark:bg-indigo-500/10 p-4 rounded-xl">
-            <h4 className="text-indigo-700 dark:text-indigo-300 font-bold text-sm mb-1">İyi Çalışmalar!</h4>
-            <p className="text-xs text-indigo-600/80 dark:text-indigo-400/80">Hedeflerine ulaşmak için devam et.</p>
-        </div>
-      </div>
     </div>
   );
 };

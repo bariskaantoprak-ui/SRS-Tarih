@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import StudySession from './pages/StudySession';
 import PackSelection from './pages/PackSelection';
@@ -7,21 +7,35 @@ import CreateCards from './pages/CreateCards';
 import Community from './pages/Community';
 import Settings from './pages/Settings';
 import Library from './pages/Library';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import BottomNav from './components/BottomNav';
 import Sidebar from './components/Sidebar';
 import { getSettings } from './services/storageService';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Define the order of main tabs for navigation logic
 const TAB_ORDER = ['/', '/library', '/study', '/community', '/create'];
 
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) return <div className="min-h-screen bg-paper dark:bg-slate-950"></div>;
+  if (!user) return <Navigate to="/login" replace />;
+
+  return <>{children}</>;
+};
+
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
-  // Hide nav on study session on mobile, but sidebar always visible on desktop unless fullscreen desired
-  const hideNavMobile = location.pathname === '/session' || location.pathname === '/settings';
+  // Routes where nav should be hidden
+  const hideNavMobile = location.pathname === '/session' || location.pathname === '/settings' || location.pathname === '/login' || location.pathname === '/register';
   const isStudySession = location.pathname === '/session';
   const isSettings = location.pathname === '/settings';
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   // --- TRANSITION LOGIC ---
   const [transitionClass, setTransitionClass] = useState('');
@@ -60,8 +74,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null || touchStartY.current === null) return;
     
-    // Disable swipe nav on specific pages
-    if (isStudySession || isSettings) return;
+    // Disable swipe nav on specific pages or if not logged in
+    if (isStudySession || isSettings || isAuthPage || !user) return;
 
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
@@ -101,11 +115,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Desktop Sidebar */}
-      {!isStudySession && <Sidebar />}
+      {/* Desktop Sidebar - Only show if logged in and not in full screen mode */}
+      {user && !isStudySession && !isAuthPage && <Sidebar />}
       
       {/* Main Content Area */}
-      <main className={`flex-1 min-h-screen w-full transition-all duration-300 ${!isStudySession ? 'md:ml-64' : ''}`}>
+      <main className={`flex-1 min-h-screen w-full transition-all duration-300 ${user && !isStudySession && !isAuthPage ? 'md:ml-64' : ''}`}>
         {/* Animated Wrapper */}
         <div 
             key={location.pathname} 
@@ -116,7 +130,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </main>
 
       {/* Mobile Bottom Nav */}
-      {!hideNavMobile && <BottomNav />}
+      {user && !hideNavMobile && <BottomNav />}
     </div>
   );
 };
@@ -133,19 +147,25 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/study" element={<PackSelection />} />
-          <Route path="/session" element={<StudySession />} />
-          <Route path="/create" element={<CreateCards />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/library" element={<Library />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            {/* Protected Routes */}
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/study" element={<ProtectedRoute><PackSelection /></ProtectedRoute>} />
+            <Route path="/session" element={<ProtectedRoute><StudySession /></ProtectedRoute>} />
+            <Route path="/create" element={<ProtectedRoute><CreateCards /></ProtectedRoute>} />
+            <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+            <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          </Routes>
+        </Layout>
+      </Router>
+    </AuthProvider>
   );
 };
 

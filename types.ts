@@ -12,6 +12,14 @@ export enum Rating {
   Easy = 4   // Recalled instantly
 }
 
+export interface User {
+  id: string;
+  username: string;
+  password?: string; // Stored locally for simple auth
+  avatar: string; // Emoji
+  createdAt: number;
+}
+
 export interface Flashcard {
   id: string;
   front: string; // Question
