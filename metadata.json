@@ -1,5 +1,5 @@
 {
-  "name": "TarihKart - SRS Study Companion",
-  "description": "KPSS, TYT ve AYT Tarih dersi için yapay zeka destekli SRS (Aralıklı Tekrar Sistemi) tabanlı çalışma uygulaması.",
+  "name": "NetKart - Akıllı Çalışma",
+  "description": "KPSS, TYT ve AYT için Tarih, Edebiyat, Türkçe ve Biyoloji gibi derslerde yapay zeka destekli SRS çalışma uygulaması.",
   "requestFramePermissions": []
 }

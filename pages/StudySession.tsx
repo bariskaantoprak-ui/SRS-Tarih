@@ -45,8 +45,8 @@ const StudySession: React.FC = () => {
 
   useEffect(() => {
     const initSession = () => {
-      // Check if we are in CRAM MODE (passed via router state)
-      const state = location.state as { cramMode?: boolean; cards?: Flashcard[] } | null;
+      // Check router state
+      const state = location.state as { cramMode?: boolean; cards?: Flashcard[]; selectedTags?: string[] } | null;
 
       if (state?.cramMode && state.cards && state.cards.length > 0) {
         // Cram Mode: Use passed cards, shuffle them
@@ -55,7 +55,13 @@ const StudySession: React.FC = () => {
         setQueue(shuffled);
       } else {
         // Standard Mode: Get due cards
-        const due = getDueCards();
+        let due = getDueCards();
+        
+        // Filter by Selected Tags/Packs if provided
+        if (state?.selectedTags && state.selectedTags.length > 0) {
+            due = due.filter(card => state.selectedTags!.includes(card.tag));
+        }
+
         const sessionQueue = due.slice(0, 20); 
         setQueue(sessionQueue);
       }
@@ -337,7 +343,7 @@ const StudySession: React.FC = () => {
 
       {/* Header */}
       <div className="px-6 mb-2 flex justify-between items-center z-10">
-        <button onClick={() => navigate(isCramMode ? '/library' : '/')} className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+        <button onClick={() => navigate(isCramMode ? '/library' : '/study')} className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>

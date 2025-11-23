@@ -123,7 +123,7 @@ const Library: React.FC = () => {
             <button 
             onClick={startExam}
             disabled={filteredCards.length === 0}
-            className="w-full md:w-auto md:px-6 py-3 bg-gradient-to-r from-orange-400 to-orange-600 text-white rounded-xl font-bold shadow-lg shadow-orange-500/30 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 whitespace-nowrap"
+            className="w-full md:w-auto md:px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold shadow-lg shadow-cyan-500/30 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 whitespace-nowrap"
             >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -141,7 +141,7 @@ const Library: React.FC = () => {
           filteredCards.map(card => (
             <div key={card.id} className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 group animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col h-full">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-[10px] font-bold px-2 py-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 rounded uppercase tracking-wide line-clamp-1 max-w-[70%]">
+                <span className="text-[10px] font-bold px-2 py-1 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 rounded uppercase tracking-wide line-clamp-1 max-w-[70%]">
                   {card.tag}
                 </span>
                 <div className="flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
@@ -197,7 +197,7 @@ const Library: React.FC = () => {
                 </button>
                 <button 
                   onClick={handleSaveEdit} 
-                  className="flex-1 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30"
+                  className="flex-1 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30"
                 >
                   Kaydet
                 </button>

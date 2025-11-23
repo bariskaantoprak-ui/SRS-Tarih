@@ -74,8 +74,8 @@ const Community: React.FC = () => {
 
       {tab === 'leaderboard' ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-500/30 h-fit">
-              <h3 className="font-bold text-indigo-100 text-sm uppercase tracking-wide mb-1">Haftalık Turnuva</h3>
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-cyan-500/30 h-fit">
+              <h3 className="font-bold text-cyan-100 text-sm uppercase tracking-wide mb-1">Haftalık Turnuva</h3>
               <p className="text-2xl font-display font-bold mb-2">İlk 3'e girmek için çalışmaya devam et!</p>
               <p className="text-sm opacity-80">Puanlar her Pazar gece yarısı sıfırlanır. En çok puanı toplayan rozet kazanır.</p>
             </div>
@@ -86,7 +86,7 @@ const Community: React.FC = () => {
                         key={user.id} 
                         className={`flex items-center justify-between p-4 rounded-2xl border transition-transform hover:scale-[1.01] ${
                         user.isCurrentUser 
-                        ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-900 shadow-sm' 
+                        ? 'bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-900 shadow-sm' 
                         : 'bg-white dark:bg-slate-900 border-gray-50 dark:border-slate-800 shadow-soft'
                         }`}
                     >
@@ -107,7 +107,7 @@ const Community: React.FC = () => {
                             <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Kart Ustası</div>
                         </div>
                     </div>
-                    <div className="font-display font-bold text-indigo-600 dark:text-indigo-400 text-lg">
+                    <div className="font-display font-bold text-cyan-600 dark:text-cyan-400 text-lg">
                         {user.xp} <span className="text-xs text-gray-400">XP</span>
                     </div>
                     </div>
@@ -135,7 +135,7 @@ const Community: React.FC = () => {
                    <button className="flex-1 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 py-3 rounded-xl font-bold text-sm hover:bg-gray-100 dark:hover:bg-slate-700">İncele</button>
                    <button 
                     onClick={() => handleDownload(deck)}
-                    className="flex-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 py-3 rounded-xl font-bold text-sm hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+                    className="flex-1 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 py-3 rounded-xl font-bold text-sm hover:bg-cyan-100 dark:hover:bg-cyan-500/20"
                    >
                      İndir (+{deck.downloads})
                    </button>

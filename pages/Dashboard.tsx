@@ -1,23 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { getStats } from '../services/storageService';
-import { DeckStats } from '../types';
+import { getStats, getCards } from '../services/storageService';
+import { DeckStats, Achievement, Flashcard } from '../types';
 
 const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DeckStats | null>(null);
   const [dueCount, setDueCount] = useState(0);
+  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
+  
+  // Widget States
+  const [dailyCard, setDailyCard] = useState<Flashcard | null>(null);
+  const [isDailyCardFlipped, setIsDailyCardFlipped] = useState(false);
 
   useEffect(() => {
     const data = getStats();
     setStats(data);
     setDueCount(data.due);
+    pickDailyCard();
   }, []);
+
+  const pickDailyCard = () => {
+    const allCards = getCards();
+    if (allCards.length > 0) {
+        const random = allCards[Math.floor(Math.random() * allCards.length)];
+        setDailyCard(random);
+        setIsDailyCardFlipped(false);
+    }
+  };
 
   if (!stats) return <div className="p-6 text-center flex items-center justify-center h-screen dark:text-white">Yükleniyor...</div>;
 
   const cardDistributionData = [
-    { name: 'Yeni', count: stats.new, color: '#6366f1' }, // Primary
+    { name: 'Yeni', count: stats.new, color: '#06b6d4' }, // Cyan 500 (Primary)
     { name: 'Tekrar', count: stats.due, color: '#f43f5e' }, // Accent
     { name: 'Bitmiş', count: stats.mastered, color: '#10b981' }, // Success
   ];
@@ -31,10 +46,10 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-10 min-h-screen pb-24 bg-paper dark:bg-slate-950 transition-colors">
+    <div className="p-6 md:p-10 min-h-screen pb-24 bg-paper dark:bg-slate-950 transition-colors relative">
       <header className="mb-8 flex justify-between items-center pt-2">
         <div>
-          <h1 className="text-3xl font-display font-extrabold text-dark dark:text-white tracking-tight">TarihKart</h1>
+          <h1 className="text-3xl font-display font-extrabold text-dark dark:text-white tracking-tight">NetKart</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Bugünün Çalışma Özeti</p>
         </div>
         <Link to="/settings" className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center text-gray-400 hover:text-primary transition-colors border border-gray-100 dark:border-slate-800">
@@ -96,11 +111,11 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Main Call to Action */}
-            <div className="bg-gradient-to-br from-primary to-secondary rounded-3xl p-8 text-white shadow-lg shadow-indigo-500/30 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-primary to-secondary rounded-3xl p-8 text-white shadow-lg shadow-cyan-500/30 relative overflow-hidden">
                 <div className="relative z-10">
-                <h2 className="text-indigo-100 font-medium mb-2 uppercase tracking-wider text-xs">Bekleyen Kartlar</h2>
+                <h2 className="text-cyan-100 font-medium mb-2 uppercase tracking-wider text-xs">Bekleyen Kartlar</h2>
                 <div className="text-6xl font-display font-bold mb-3 tracking-tight">{dueCount}</div>
-                <p className="text-indigo-100 opacity-90 mb-8 font-medium">kart tekrar edilmeyi bekliyor.</p>
+                <p className="text-cyan-100 opacity-90 mb-8 font-medium">kart tekrar edilmeyi bekliyor.</p>
                 
                 <div className="flex gap-4 max-w-md">
                     {dueCount > 0 ? (
@@ -122,8 +137,50 @@ const Dashboard: React.FC = () => {
                 </div>
                 {/* Decorative Blobs */}
                 <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
-                <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-purple-500/30 rounded-full blur-2xl"></div>
+                <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-500/30 rounded-full blur-2xl"></div>
             </div>
+
+            {/* "Card of the Day" Widget */}
+            {dailyCard && (
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800 relative overflow-hidden group">
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-2">
+                             <div className="bg-amber-100 dark:bg-amber-500/20 p-1.5 rounded-lg text-amber-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                    <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+                                </svg>
+                             </div>
+                             <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Günün Kartı</h3>
+                        </div>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); pickDailyCard(); }}
+                            className="text-gray-400 hover:text-primary transition-colors p-1"
+                            title="Yeni kart getir"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div 
+                        onClick={() => setIsDailyCardFlipped(!isDailyCardFlipped)}
+                        className="cursor-pointer perspective-1000 min-h-[140px] flex items-center justify-center text-center p-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border-2 border-dashed border-gray-200 dark:border-slate-700 hover:border-primary/50 dark:hover:border-primary/50 transition-all"
+                    >
+                         <div className="w-full">
+                            <p className="text-xs font-bold text-gray-400 mb-2 uppercase">
+                                {isDailyCardFlipped ? 'Cevap' : 'Soru'}
+                            </p>
+                            <p className={`text-lg font-display font-bold ${isDailyCardFlipped ? 'text-primary dark:text-cyan-400' : 'text-dark dark:text-white'} transition-all`}>
+                                {isDailyCardFlipped ? dailyCard.back : dailyCard.front}
+                            </p>
+                            <p className="text-[10px] text-gray-400 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                Çevirmek için tıkla
+                            </p>
+                         </div>
+                    </div>
+                </div>
+            )}
 
             {/* Heatmap Calendar */}
             <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800">
@@ -135,10 +192,10 @@ const Dashboard: React.FC = () => {
                         title={`${day.date}: ${day.count} kart`}
                         className={`w-6 h-6 md:w-8 md:h-8 rounded-lg transition-all ${
                             day.level === 0 ? 'bg-gray-100 dark:bg-slate-800' :
-                            day.level === 1 ? 'bg-indigo-200 dark:bg-indigo-900/40' :
-                            day.level === 2 ? 'bg-indigo-300 dark:bg-indigo-800/60' :
-                            day.level === 3 ? 'bg-indigo-400 dark:bg-indigo-600/80' :
-                            'bg-indigo-600 dark:bg-indigo-500'
+                            day.level === 1 ? 'bg-cyan-200 dark:bg-cyan-900/40' :
+                            day.level === 2 ? 'bg-cyan-300 dark:bg-cyan-800/60' :
+                            day.level === 3 ? 'bg-cyan-400 dark:bg-cyan-600/80' :
+                            'bg-cyan-600 dark:bg-cyan-500'
                         }`}
                       ></div>
                   ))}
@@ -221,25 +278,60 @@ const Dashboard: React.FC = () => {
                   {stats.achievements.map(ach => {
                     const isUnlocked = !!ach.unlockedAt;
                     return (
-                      <div 
+                      <button 
                         key={ach.id} 
-                        className={`aspect-square rounded-2xl flex flex-col items-center justify-center p-2 text-center border transition-all duration-300 ${
+                        onClick={() => setSelectedAchievement(ach)}
+                        className={`aspect-square rounded-2xl flex flex-col items-center justify-center p-2 text-center border transition-all duration-300 cursor-pointer active:scale-95 hover:shadow-sm ${
                           isUnlocked 
                             ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-900/50' 
-                            : 'bg-gray-50 dark:bg-slate-800 border-transparent opacity-40 grayscale'
+                            : 'bg-gray-50 dark:bg-slate-800 border-transparent opacity-60 grayscale'
                         }`}
-                        title={ach.description}
+                        title="Detay için tıkla"
                       >
                          <div className="text-2xl mb-1">{ach.icon}</div>
                          <div className={`text-[9px] font-bold leading-tight ${isUnlocked ? 'text-amber-700 dark:text-amber-400' : 'text-gray-400'}`}>
                            {ach.title}
                          </div>
-                      </div>
+                      </button>
                     )
                   })}
                </div>
             </div>
         </div>
+
+        {/* Achievement Detail Modal */}
+        {selectedAchievement && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => setSelectedAchievement(null)}>
+                <div 
+                    className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-in zoom-in-95"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div className="flex flex-col items-center text-center">
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4 ${
+                             selectedAchievement.unlockedAt ? 'bg-amber-100 dark:bg-amber-500/20' : 'bg-gray-100 dark:bg-slate-800 grayscale'
+                        }`}>
+                            {selectedAchievement.icon}
+                        </div>
+                        <h2 className="text-2xl font-bold text-dark dark:text-white mb-2">{selectedAchievement.title}</h2>
+                        <div className="mb-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                                selectedAchievement.unlockedAt ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-gray-400'
+                            }`}>
+                                {selectedAchievement.unlockedAt ? 'Kazanıldı' : 'Kilitli'}
+                            </span>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-300 font-medium mb-6">{selectedAchievement.description}</p>
+                        
+                        <button 
+                            onClick={() => setSelectedAchievement(null)}
+                            className="w-full py-3 rounded-xl bg-gray-100 dark:bg-slate-800 text-dark dark:text-white font-bold hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            Kapat
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
 
       </div>
     </div>

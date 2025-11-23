@@ -42,8 +42,8 @@ const Sidebar: React.FC = () => {
   return (
     <div className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 h-screen fixed left-0 top-0 z-50 transition-colors">
       <div className="p-6">
-        <h1 className="text-2xl font-display font-extrabold text-dark dark:text-white tracking-tight">TarihKart</h1>
-        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Web Panel</p>
+        <h1 className="text-2xl font-display font-extrabold text-dark dark:text-white tracking-tight">NetKart</h1>
+        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Akıllı Sınav Hazırlık</p>
       </div>
 
       <nav className="flex-1 px-4 space-y-2">
@@ -69,7 +69,7 @@ const Sidebar: React.FC = () => {
       <div className="p-4 border-t border-gray-100 dark:border-slate-800">
         <div className="bg-indigo-50 dark:bg-indigo-500/10 p-4 rounded-xl">
             <h4 className="text-indigo-700 dark:text-indigo-300 font-bold text-sm mb-1">İyi Çalışmalar!</h4>
-            <p className="text-xs text-indigo-600/80 dark:text-indigo-400/80">Masaüstü sürümü ile daha verimli çalış.</p>
+            <p className="text-xs text-indigo-600/80 dark:text-indigo-400/80">Hedeflerine ulaşmak için devam et.</p>
         </div>
       </div>
     </div>

@@ -2,9 +2,14 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>TarihKart - SRS Çalışma</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#06b6d4" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>NetKart - Akıllı Çalışma</title>
     
+    <link rel="manifest" href="/manifest.json" />
+
     <!-- Modern Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,8 +22,8 @@
         theme: {
           extend: {
             colors: {
-              primary: '#6366f1', // Indigo 500 - Modern Primary
-              secondary: '#8b5cf6', // Violet 500
+              primary: '#06b6d4', // Cyan 500 (Turkuaz) - Modern Primary
+              secondary: '#3b82f6', // Blue 500 (Mavi)
               accent: '#f43f5e', // Rose 500
               success: '#10b981', // Emerald 500
               dark: '#0f172a', // Slate 900
@@ -43,6 +48,9 @@
         -webkit-tap-highlight-color: transparent;
         font-family: 'Inter', sans-serif;
         overflow-x: hidden;
+        /* Safe area padding for notched phones */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
       }
       /* Dark mode body override handled by tailwind class on html */
       html.dark body {
@@ -69,7 +77,8 @@
     "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
     "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "canvas-confetti": "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/+esm"
+    "canvas-confetti": "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/+esm",
+    "@capacitor/cli": "https://aistudiocdn.com/@capacitor/cli@^7.4.4"
   }
 }
 </script>

@@ -8,12 +8,29 @@ const PREMADE_TRACK_KEY = 'tarihkart_premade_tracking_v1';
 
 // --- ACHIEVEMENTS DEFINITION ---
 export const ACHIEVEMENTS_LIST: Omit<Achievement, 'unlockedAt'>[] = [
+  // Starter
   { id: 'first_step', title: 'Başlangıç', description: 'İlk kartını tamamla', icon: '🚀' },
+  { id: 'creator', title: 'Mimar', description: 'İlk paketini oluştur', icon: '🏗️' },
+  
+  // Streaks
   { id: 'streak_3', title: 'Alev Aldı', description: '3 gün üst üste çalış', icon: '🔥' },
+  { id: 'streak_7', title: 'Haftalık Seri', description: '7 gün üst üste çalış', icon: '🗓️' },
+  { id: 'streak_30', title: 'Aylık İstikrar', description: '30 gün üst üste çalış', icon: '🏆' },
+  
+  // Mastery
   { id: 'master_10', title: 'Bilge', description: '10 kartı ezberle', icon: '🧠' },
+  { id: 'master_50', title: 'Profesör', description: '50 kartı ezberle', icon: '🎓' },
+  
+  // Volume
+  { id: 'dedicated_50', title: 'Adanmış', description: 'Toplam 50 inceleme yap', icon: '📚' },
+  { id: 'review_100', title: 'Yüzler Kulübü', description: 'Toplam 100 inceleme yap', icon: '💯' },
+  { id: 'review_500', title: 'Maratoncu', description: 'Toplam 500 inceleme yap', icon: '🏃' },
+  { id: 'library_50', title: 'Kütüphaneci', description: 'Kütüphanene 50 kart ekle', icon: '📖' },
+
+  // Time / Habit
   { id: 'night_owl', title: 'Gece Kuşu', description: 'Saat 22:00 - 04:00 arası çalış', icon: '🦉' },
   { id: 'early_bird', title: 'Erkenci Kuş', description: 'Saat 05:00 - 09:00 arası çalış', icon: '🌅' },
-  { id: 'dedicated_50', title: 'Adanmış', description: 'Toplam 50 inceleme yap', icon: '📚' },
+  { id: 'weekend_warrior', title: 'Hafta Sonu Savaşçısı', description: 'Hafta sonu çalışma yap', icon: '🏖️' },
 ];
 
 // --- CARD SERVICES ---
@@ -134,6 +151,7 @@ export const trackStudyProgress = (rating: Rating, durationSeconds: number = 0):
   // Normalize to midnight for daily stats
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const hour = now.getHours();
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
   
   let newAchievement: Achievement | null = null;
   let updatedProgress = { ...progress, totalReviews: progress.totalReviews + 1 };
@@ -202,6 +220,7 @@ export const trackStudyProgress = (rating: Rating, durationSeconds: number = 0):
   // 2. ACHIEVEMENT CHECKS
   const unlockedIds = new Set(progress.unlockedAchievements);
   const cards = getCards();
+  const packs = getUserPacks();
   const masteredCount = cards.filter(c => c.status === CardStatus.Graduated).length;
 
   const checkAndUnlock = (id: string, condition: boolean) => {
@@ -214,14 +233,29 @@ export const trackStudyProgress = (rating: Rating, durationSeconds: number = 0):
     }
   };
 
+  // Starters
   checkAndUnlock('first_step', updatedProgress.totalReviews >= 1);
+  checkAndUnlock('creator', packs.length >= 1);
+  checkAndUnlock('library_50', cards.length >= 50);
+
+  // Streaks
   checkAndUnlock('streak_3', updatedProgress.currentStreak >= 3);
+  checkAndUnlock('streak_7', updatedProgress.currentStreak >= 7);
+  checkAndUnlock('streak_30', updatedProgress.currentStreak >= 30);
+
+  // Mastery
   checkAndUnlock('master_10', masteredCount >= 10);
+  checkAndUnlock('master_50', masteredCount >= 50);
+
+  // Volume
   checkAndUnlock('dedicated_50', updatedProgress.totalReviews >= 50);
+  checkAndUnlock('review_100', updatedProgress.totalReviews >= 100);
+  checkAndUnlock('review_500', updatedProgress.totalReviews >= 500);
   
   // Time based
   checkAndUnlock('night_owl', hour >= 22 || hour < 4);
   checkAndUnlock('early_bird', hour >= 5 && hour < 9);
+  checkAndUnlock('weekend_warrior', dayOfWeek === 0 || dayOfWeek === 6); // Sunday or Saturday
 
   updatedProgress.unlockedAchievements = Array.from(unlockedIds);
   saveUserProgress(updatedProgress);

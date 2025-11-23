@@ -14,8 +14,8 @@ const getCardIcon = (text: string, tag: string) => {
   const content = (text + " " + tag).toLowerCase();
   const iconClass = "w-12 h-12 opacity-80";
 
-  // WAR / MILITARY
-  if (content.match(/savaş|cephe|ordu|asker|fetih|taarruz|savunma|kuvay|müdafaa|sefer|muharebe/)) {
+  // HISTORY: War / Military
+  if (content.match(/savaş|cephe|ordu|asker|fetih|taarruz|savunma|kuvay|müdafaa|sefer|muharebe|tarih|osmanlı|selçuklu/)) {
     return (
       <div className="text-rose-300 bg-rose-50 dark:bg-rose-500/10 p-4 rounded-full">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}>
@@ -26,42 +26,43 @@ const getCardIcon = (text: string, tag: string) => {
     );
   }
 
-  // LEADER / RULER
-  if (content.match(/padişah|sultan|kral|bey|atatürk|paşa|lider|hükümdar|devlet|imparator|han|hakan/)) {
+  // SCIENCE: Biology / Chemistry / Physics
+  if (content.match(/hücre|dna|biyoloji|canlı|bitki|hayvan|sistem|organ|kimya|fizik|enerji|atom|madde|kuvvet/)) {
     return (
-      <div className="text-amber-300 bg-amber-50 dark:bg-amber-500/10 p-4 rounded-full">
+      <div className="text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 p-4 rounded-full">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
+           <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
         </svg>
       </div>
     );
   }
 
-  // LAW / AGREEMENT
-  if (content.match(/antlaşma|sözleşme|kanun|ferman|genelge|kongre|anayasa|meclis|tbmm|misak/)) {
-    return (
-      <div className="text-blue-300 bg-blue-50 dark:bg-blue-500/10 p-4 rounded-full">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-        </svg>
-      </div>
-    );
-  }
-
-  // CULTURE / BOOK
-  if (content.match(/eser|kitap|yazar|şair|destan|alfabe|dil|edebiyat|cami|mimari/)) {
+  // LANGUAGE / LITERATURE: Book / Pen / Grammar
+  if (content.match(/eser|kitap|yazar|şair|roman|şiir|edebiyat|türkçe|sıfat|zamir|yüklem|özne|dilbilgisi|yazım|noktalama/)) {
     return (
       <div className="text-purple-300 bg-purple-50 dark:bg-purple-500/10 p-4 rounded-full">
          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
         </svg>
       </div>
     );
   }
+  
+  // GEOGRAPHY / PLACES
+  if (content.match(/coğrafya|dağ|ova|plato|iklim|nüfus|harita|bölge|şehir/)) {
+      return (
+        <div className="text-blue-300 bg-blue-50 dark:bg-blue-500/10 p-4 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+            </svg>
+        </div>
+      );
+  }
 
-  // DEFAULT / TIME
+  // DEFAULT / GENERAL
   return (
-    <div className="text-indigo-200 bg-indigo-50 dark:bg-indigo-500/10 p-4 rounded-full">
+    <div className="text-cyan-200 bg-cyan-50 dark:bg-cyan-500/10 p-4 rounded-full">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
@@ -276,7 +277,7 @@ const FlashcardView: React.FC<Props> = ({ card, onRate, onUndo, canUndo }) => {
                 className="absolute inset-0 w-full h-full backface-hidden rounded-3xl shadow-card bg-white dark:bg-slate-800 flex flex-col items-center justify-between p-8 text-center border border-gray-100 dark:border-slate-700 transition-colors"
               >
                 <div className="w-full flex justify-between items-start">
-                  <div className="px-3 py-1 bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded-full text-xs font-bold uppercase tracking-wide">
+                  <div className="px-3 py-1 bg-cyan-50 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 rounded-full text-xs font-bold uppercase tracking-wide">
                     {card.tag}
                   </div>
                   {/* TTS Button */}
@@ -310,7 +311,7 @@ const FlashcardView: React.FC<Props> = ({ card, onRate, onUndo, canUndo }) => {
 
               {/* Back Side */}
               <div 
-                className="absolute inset-0 w-full h-full backface-hidden rounded-3xl shadow-card bg-gradient-to-br from-indigo-600 to-purple-700 text-white flex flex-col items-center justify-center p-8 text-center rotate-y-180 overflow-y-auto no-scrollbar"
+                className="absolute inset-0 w-full h-full backface-hidden rounded-3xl shadow-card bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex flex-col items-center justify-center p-8 text-center rotate-y-180 overflow-y-auto no-scrollbar"
               >
                 <div className="absolute top-6 right-6 flex gap-2">
                     {/* TTS Button (Back) */}

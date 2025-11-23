@@ -7,7 +7,9 @@ import { Flashcard, UserPack } from '../types';
 
 const CreateCards: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'manual' | 'packs' | 'csv'>('manual');
+  const activeTabState = useState<'manual' | 'packs' | 'csv'>('manual');
+  const activeTab = activeTabState[0];
+  const setActiveTab = activeTabState[1];
   
   // Manual States
   const [manualFront, setManualFront] = useState('');
@@ -139,6 +141,18 @@ const CreateCards: React.FC = () => {
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', 'tarihkart_sablon.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadTxtTemplate = () => {
+    const txtContent = "Soru Örneği;Cevap Örneği;Konu Etiketi\nİstanbul'un Fethi?;1453;Yükselme Dönemi";
+    const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'tarihkart_sablon.txt');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -327,7 +341,6 @@ const CreateCards: React.FC = () => {
       {/* CSV Import Section */}
       {activeTab === 'csv' && (
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800 p-6 animate-in fade-in slide-in-from-bottom-4 max-w-2xl">
-          {/* CSV Content kept same as previous version */}
            <div className="flex items-center gap-3 mb-5">
              <div className="bg-blue-50 dark:bg-blue-500/10 p-2.5 rounded-xl text-blue-500">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
@@ -341,19 +354,27 @@ const CreateCards: React.FC = () => {
             <div className="p-4 bg-blue-50 dark:bg-blue-500/10 rounded-2xl text-sm text-blue-800 dark:text-blue-300">
                <p className="font-bold mb-2">Nasıl Çalışır?</p>
                <p>Excel veya Not Defteri ile bir dosya oluşturun. Her satıra bir kart gelecek şekilde yazın. Ayraç olarak noktalı virgül (;) kullanın.</p>
-               <button 
-                onClick={downloadTemplate}
-                className="mt-3 text-xs font-bold underline hover:text-blue-600"
-               >
-                 Örnek Şablonu İndir
-               </button>
+               <div className="flex flex-wrap gap-3 mt-3">
+                    <button 
+                        onClick={downloadTemplate}
+                        className="text-xs font-bold underline hover:text-blue-600"
+                    >
+                        Excel (.csv) Şablonu
+                    </button>
+                    <button 
+                        onClick={downloadTxtTemplate}
+                        className="text-xs font-bold underline hover:text-blue-600"
+                    >
+                        Not Defteri (.txt) Şablonu
+                    </button>
+               </div>
             </div>
 
             <div 
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-2xl p-8 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
             >
-                <span className="text-sm font-bold text-gray-500 dark:text-gray-400">CSV Dosyası Seç</span>
+                <span className="text-sm font-bold text-gray-500 dark:text-gray-400">Dosya Seç (.csv veya .txt)</span>
                 <input 
                     type="file" 
                     ref={fileInputRef} 
