@@ -140,7 +140,7 @@ const Dashboard: React.FC = () => {
                 <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-500/30 rounded-full blur-2xl"></div>
             </div>
 
-            {/* "Card of the Day" Widget */}
+            {/* "Card of the Day" Widget with 3D Flip */}
             {dailyCard && (
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-soft border border-gray-50 dark:border-slate-800 relative overflow-hidden group">
                     <div className="flex justify-between items-center mb-4">
@@ -165,20 +165,39 @@ const Dashboard: React.FC = () => {
 
                     <div 
                         onClick={() => setIsDailyCardFlipped(!isDailyCardFlipped)}
-                        className="cursor-pointer perspective-1000 min-h-[140px] flex items-center justify-center text-center p-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border-2 border-dashed border-gray-200 dark:border-slate-700 hover:border-primary/50 dark:hover:border-primary/50 transition-all"
+                        className="cursor-pointer perspective-1000 h-[160px]"
                     >
-                         <div className="w-full">
-                            <p className="text-xs font-bold text-gray-400 mb-2 uppercase">
-                                {isDailyCardFlipped ? 'Cevap' : 'Soru'}
-                            </p>
-                            <p className={`text-lg font-display font-bold ${isDailyCardFlipped ? 'text-primary dark:text-cyan-400' : 'text-dark dark:text-white'} transition-all`}>
-                                {isDailyCardFlipped ? dailyCard.back : dailyCard.front}
-                            </p>
-                            <p className="text-[10px] text-gray-400 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                Çevirmek için tıkla
-                            </p>
+                         <div 
+                            className="relative w-full h-full preserve-3d transition-transform duration-500"
+                            style={{ transform: isDailyCardFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+                         >
+                             {/* FRONT */}
+                             <div className="absolute inset-0 w-full h-full backface-hidden rounded-2xl bg-gray-50 dark:bg-slate-800 border-2 border-dashed border-gray-200 dark:border-slate-700 flex flex-col items-center justify-center text-center p-4 hover:border-primary/50 transition-colors">
+                                  <p className="text-xs font-bold text-gray-400 mb-2 uppercase">Soru</p>
+                                  <p className="text-lg font-display font-bold text-dark dark:text-white line-clamp-3">
+                                     {dailyCard.front}
+                                  </p>
+                                  <p className="text-[10px] text-gray-400 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                     Çevirmek için tıkla
+                                  </p>
+                             </div>
+
+                             {/* BACK */}
+                             <div className="absolute inset-0 w-full h-full backface-hidden rounded-2xl bg-gray-50 dark:bg-slate-800 border-2 border-dashed border-primary/30 dark:border-primary/30 flex flex-col items-center justify-center text-center p-4 rotate-y-180">
+                                  <p className="text-xs font-bold text-gray-400 mb-2 uppercase">Cevap</p>
+                                  <p className="text-lg font-display font-bold text-primary dark:text-cyan-400 line-clamp-3">
+                                     {dailyCard.back}
+                                  </p>
+                             </div>
                          </div>
                     </div>
+                    
+                    <style>{`
+                        .perspective-1000 { perspective: 1000px; }
+                        .preserve-3d { transform-style: preserve-3d; }
+                        .backface-hidden { backface-visibility: hidden; }
+                        .rotate-y-180 { transform: rotateY(180deg); }
+                    `}</style>
                 </div>
             )}
 
